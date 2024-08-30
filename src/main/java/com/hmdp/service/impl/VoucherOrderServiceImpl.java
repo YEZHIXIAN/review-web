@@ -50,6 +50,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
 
     @Resource
     private RedissonClient redissonClient;
+
     private static final DefaultRedisScript<Long> seckillScript;
     static {
         seckillScript = new DefaultRedisScript<>();
@@ -130,7 +131,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
 
     @Transactional
     public void createVoucherOrder(VoucherOrder voucherOrder) {
-        // 5.一人一单
+        // 4.一人一单
         int count = query().eq("user_id", voucherOrder.getUserId())
                 .eq("voucher_id", voucherOrder.getVoucherId())
                 .count();
@@ -138,7 +139,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             return;
         }
 
-        // 6.扣减库存
+        // 5.扣减库存
         boolean success = seckillVoucherService.update()
                 .setSql("stock = stock - 1")
                 .eq("voucher_id", voucherOrder.getVoucherId())
@@ -148,8 +149,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             return;
         }
 
-
-        // 7.创建订单
+        // 6.创建订单
         long orderId = redisIdWorker.nextId("order");
         voucherOrder.setId(orderId);
         voucherOrder.setUserId(voucherOrder.getUserId());
